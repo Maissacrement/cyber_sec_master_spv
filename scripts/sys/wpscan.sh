@@ -1,0 +1,1 @@
+wpscan --url http://apache-waf:8080 > /scripts/sys/logs/wpscan_result.txt

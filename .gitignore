@@ -1,0 +1,4 @@
+#Ignorer le dossier de BDD
+db
+#Ignorer les logs
+cyber_sec_master_spv/scripts/logs

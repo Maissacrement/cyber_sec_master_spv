@@ -1,12 +1,111 @@
 name: offensive-security-on-loadbalancer
 
-# Ce scénario reflète notre environnement de production : un serveur Nginx utilisé
-# comme load balancer pour les réplicas de notre application. 
+# Ce scénario reflète notre environnement de production : un serveur Apache avec Modsecurity 
+# d'implémenté utilisé comme load balancer et WAF pour les réplicas de notre application. 
 # Juste à côté, un service Fail2Ban surveille en quasi temps réel les logs générés,
 # constituant ainsi une première ligne de défense contre les menaces potentielles.  
 
 services:
-  ######## HERE ATTACKER INFRA ########
+
+###############################
+###   Apache + Modsecrutiy  ###
+###############################
+  apache-waf:
+    image: owasp/modsecurity-crs:apache-alpine
+    container_name: apache-waf
+    restart: unless-stopped
+    ports:
+      - 31337:8080
+    environment:
+      # —— Reverse‑proxy ——
+      BACKEND: http://wordpressvuln
+      SERVER_NAME: wordpress-tp.local
+      PORT: "8080"
+      APACHE_ALWAYS_TLS_REDIRECT: off
+      REQ_HEADER_FORWARDED_PROTO: http
+      # —— ModSecurity tuning  ——
+      MODSEC_RULE_ENGINE: on
+      BLOCKING_PARANOIA: "2"
+      DETECTION_PARANOIA: "2"
+      ANOMALY_INBOUND: "10"
+      ANOMALY_OUTBOUND: "5"
+      ALLOWED_METHODS: GET POST PUT HEAD
+      ALLOWED_REQUEST_CONTENT_TYPE: text/xml|application/xml|text/plain|application/x-www-form-urlencoded
+      VALIDATE_UTF8_ENCODING: "1"
+      COMBINED_FILE_SIZES: "1000000"
+    volumes:
+      - ./apache/custom-ratelimit.conf:/etc/modsecurity.d/custom-ratelimit.conf:ro
+      - ./apache/logs:/var/log/apache2/
+      - ./apache/REQUEST-900-EXCLUSION-WP-LOGIN.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-900-EXCLUSION-WP-LOGIN.conf:ro
+      - ./apache/modsec_audit.log:/var/log/modsec_audit.log
+      - ./apache/modsec_error.log:/var/log/modsec_error.log
+    networks:
+      - web
+###############################
+###   	   Fail2Ban   	    ###
+###############################
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    restart: unless-stopped
+    network_mode: service:apache-waf
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./apache/logs:/var/log/apache2/:ro
+      - ./fail2ban/jail.d:/etc/fail2ban/jail.d:ro
+      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - ./fail2ban/action.d:/etc/fail2ban/action.d:ro
+      - /etc/localtime:/etc/localtime:ro
+
+###############################
+###   Wordpress Vulnérable  ###
+###############################
+  wordpressvuln:
+    image: wordpressvuln:latest
+    #build: Dockerfile
+    #ports:
+    #  - "31337:80"
+    environment:
+      WORDPRESS_DB_PASSWORD: password
+    volumes:
+      - "./wp:/var/www/html:rw"
+    networks:
+      - web
+  mysql:
+    image: "mysql:5.7"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./db:/var/lib/mysql
+    networks:
+      - web
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    #ports:
+    #  - 31338:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+    depends_on:
+      - mysql
+    networks:
+      - web
+  wp-cli:
+    image: "wordpress:cli-php7.1"
+    environment:
+      - APACHE_RUN_USER="www-data"
+      - APACHE_RUN_GROUP="www-data"
+    depends_on:
+      - "mysql"
+    volumes:
+      - "./wp:/var/www/html:rw"
+      - "./bin/install-wp.sh:/usr/local/bin/install-wp:ro"
+    networks:
+      - web
+###############################
+ 
+######## HERE ATTACKER INFRA ########
 
   attacker:
     build: 
@@ -14,74 +113,12 @@ services:
       dockerfile: ./docker/Dockerfile.attack
     depends_on:
       - fail2ban
+    entrypoint: tail -f /dev/null
     networks:
-      - internet
+      - web
     volumes:
       - "./scripts:/scripts"
-    
-  ######## HERE MY PROD INFRA ########
-
-  ########################################
-  ############ INIT FAIL2BAN ########
-
-  fail2ban:
-    image: crazymax/fail2ban:latest
-    container_name: fail2ban
-    restart: always
-    network_mode: host
-    privileged: true
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    depends_on:
-      - reverseproxy
-    volumes:
-      - "./fail2ban/nginx.conf:/data/jail.d/nginx.conf"
-      - "./fail2ban/nginx-accesslog.conf:/data/filter.d/nginx-accesslog.conf" 
-      - "./nginx/logs/:/var/log/nginx/:ro"
-
-  ########################################
-  ############ INIT REVERSE PROXY ########
-  reverseproxy:
-    image: nginx:stable-alpine3.17-slim
-    restart: always
-    ports:
-      - "172.100.30.1:80:80"
-    networks:
-      - internet
-      - infra
-    depends_on:
-      - app
-    volumes:
-      - ./nginx/server.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - "./nginx/logs:/var/log/nginx"
-
-  ########################################
-  ############ INIT APP ########
-
-  app:
-    image: maissacrement/pock8snodejs
-    deploy:
-      replicas: 2
-    networks:
-      - infra
-
-
+ 
 networks:
-  infra:
+  web:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.100.30.0/24
-          gateway: 172.100.30.1
-
-  internet:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.100.40.0/24
-          gateway: 172.100.40.1
-
-volumes:
-  nglog:

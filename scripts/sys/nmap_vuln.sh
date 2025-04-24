@@ -1,0 +1,1 @@
+nmap apache-waf -Pn -A -O --script vuln > /scripts/sys/logs/nmap_result.txt
