@@ -14,14 +14,11 @@ services:
       dockerfile: ./docker/Dockerfile.attack
     depends_on:
       - fail2ban
-    entrypoint: tail -f /dev/null
     networks:
       - internet
     volumes:
       - "./scripts:/scripts"
     
-
-
   ######## HERE MY PROD INFRA ########
 
   ########################################

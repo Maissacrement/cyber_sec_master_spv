@@ -1,0 +1,15 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: default
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 3h
+
+receivers:
+  - name: default
+    # For testing, just log to stdout.  Replace with email, Slack, PagerDuty…
+    webhook_configs:
+      - url: 'http://localhost:8080/'
+
