@@ -158,12 +158,15 @@ Pour ajouter un nouveau scénario, créez une branche git et suivez le template 
 
 ## Bibliothèque d'Exploits Collaborative
 
-Les scripts et outils d'exploitation sont maintenus collectivement par l'équipe. Pour contribuer :
+Les scripts et outils d'exploitation sont maintenus collectivement par l'équipe. Votre a realiser sur une cible LB sur l'algo de votre choix (least connection, ....). Pour contribuer :
 
 - Processus de contribution
     - Forker le dépôt principal
-    - Ajouter votre exploit dans /exploits/
-    - Documenter selon le template
+    - Ajouter votre exploit dans ./scripts/exploits/
+    - Choisir un algorithme de loadbalancing a exploiter
+    - Faites une analyse cyber sur les cve/vwe et exploit lié a votre cible (LB RR: CVE ...) 
+    - Trouver un scenario qui vous convient et concretisez le techniquement 
+    - Documenter votre ou vos scenario
     - Créer une pull request
 - Standards de qualité
     - Tests unitaires requis
