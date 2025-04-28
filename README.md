@@ -56,6 +56,25 @@ En conclusion, la mitigation appliquée permet de réduire de 90 % le temps de d
 
 <img src="assets/analyse.png" style="width:100%" >
 
+
+
+### Outils de monitoring et datavisualisation
+
+#### Exporter Network Analayser
+
+expoter prometheus customiser definit sous python afin de recuperer des metrics reseaux ici pour determiner un comportement suspect sur le reseau. Notre environnement est containeuriser et fournis toutes les metrics as prometheus que nous utilisons directement sur grafana via des script batch
+
+#### NGINX exporter 
+
+Cette exporter vas nous permettre d'avoir les metrics exporter sur l'endpoint "/stub_status" que nous avons defini sur la conf d'nginx via le flag "stub_status" 
+
+#### Grafana
+
+j'ai configurer grafana pour qu'il puisse a l'aide de notre exporter customiser faire des analyse reseaux, plus precisement nous allons ciblé toute les ip qui font plus de 10 requete par seconde a fin de mener des analyse plus aprofondie
+
+<img src="assets/grafana.png" style="width:100%" >
+
+
 ### Definiton appliqué a notre context
 
 <br />
@@ -179,6 +198,26 @@ d’un état initial contrôlé vers un état final où vos privilèges ou vos c
 | **Workflows automatisés** | **Pipeline CI/CD** | Build, lint, déploiement d’environnements IaC |
 |  | **Tests de sécurité** (OWASP ZAP, Trivy, scripts custom) | Scans SAST/DAST, exploitation automatique |
 |  | **Collecte & analyse** (Prometheus, Grafana, ...) | Agrégation logs/metrics, tableaux de bord, alertes |
+
+
+## Stack par défaut — version corrigée et prête à paramétrer
+
+| **Service**            | **Fonction**                                                             | **Ports exposés**        |
+|------------------------|--------------------------------------------------------------------------|--------------------------|
+| `attacker`             | Génère des attaques automatisées destinées au load-balancer              | —                        |
+| `reverse-proxy`        | Nginx faisant office de load-balancer vers l’application                 | `80`, `8080/protected`   |
+| `app`                  | Node JS App                                                              | `8080`                   |
+| `fail2ban`             | Firewall dynamique applique de facon dynamique des regles iptables       | —                        |
+| `nginx-exporter`       | Collecte les métriques Nginx                                             | —                        |
+| `grafana`              | Visualisation & tableaux de bord                                         | `3000`                   |
+| `prometheus`           | Collecte et stockage des métriques                                       | `9090`                   |
+| `alertmanager`         | Gestion des alertes (Prometheus)                                         | `9093`                   |
+| `exporter-netanalyser` | Exporter personnalisé pour métriques Nginx                               | —                        |
+| `cadvisor`             | Exporte les métriques système liées aux conteneurs                       | —                        |
+| `node-exporter`        | Exporte les métriques système de l’hôte                                  | —                        |
+
+
+Les exporters publient en temps réel les données système afin qu’elles puissent être collectées, corrélées et analysées par Prometheus puis visualisées dans Grafana. Données importantes pour pouvoir faire des analyses reseau plus fine.
 
 ## Exemple d'attaques automatisées
 

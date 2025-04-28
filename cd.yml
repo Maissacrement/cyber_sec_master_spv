@@ -1,0 +1,8 @@
+- name: Executer des commandes shell sur ansible
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Executer des commandes shell
+      shell: |
+        timeout 60 make workflow-attack-example

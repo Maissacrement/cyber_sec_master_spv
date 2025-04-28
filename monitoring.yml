@@ -7,13 +7,30 @@ services:
   grafana:
     image: grafana/grafana 
     container_name: grafana
+    privileged: true
     volumes:
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana/dashboards/NGINX.json:/etc/grafana/provisioning/dashboards/NGINX.json:rw
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:rw
     ports:
       - 3000:3000
     environment:
-      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/cadavisor.json
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/NGINX.json
+      GF_LOG_LEVEL: debug
+    networks:
+      - observability
+
+  nginxexporter:
+    image: nginx/nginx-prometheus-exporter:1.4.0
+    ports:
+      - 9113:9113 
+    networks:
+      - observability
+      - infra
+    command:
+      --nginx.scrape-uri=http://reverseproxy:8080/stub_status
+    extra_hosts:
+      - "reverseproxy:172.100.30.1"
+
 
   ########################################
   ############ Logs Gateway ########
@@ -59,7 +76,7 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: monitoring_cadvisor
+    container_name: cadvisor
     restart: unless-stopped
     privileged: true
     volumes:
@@ -78,6 +95,15 @@ services:
       - /dev/kmsg:/dev/kmsg
     expose:
       - 8080
+
+  exporternetanalyser:
+    build:
+      context: ./custum-network-analysis
+      dockerfile: ../docker/Dockerfile.exporter
+    volumes:
+      - "./nginx/logs:/var/log/nginx:ro"
+    networks:
+      - observability
 
   exporter:
     image: quay.io/prometheus/node-exporter:v1.8.1
@@ -103,6 +129,9 @@ volumes:
   am_data:
 
 networks:
+  offensive-security-on-loadbalancer_infra:
+    name: infra
+    external: true
   observability:
     driver: bridge
     ipam:

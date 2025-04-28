@@ -6,56 +6,7 @@ name: offensive-security-on-loadbalancer
 # constituant ainsi une première ligne de défense contre les menaces potentielles.  
 
 services:
-  ######## HERE ATTACKER INFRA ########
-
-  attacker:
-    build: 
-      context: .
-      dockerfile: ./docker/Dockerfile.attack
-    depends_on:
-      - fail2ban
-    networks:
-      - internet
-    volumes:
-      - "./scripts:/scripts"
-    
-  ######## HERE MY PROD INFRA ########
-
-  ########################################
-  ############ INIT FAIL2BAN ########
-
-  fail2ban:
-    image: crazymax/fail2ban:latest
-    container_name: fail2ban
-    restart: always
-    network_mode: host
-    privileged: true
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    depends_on:
-      - reverseproxy
-    volumes:
-      - "./fail2ban/nginx.conf:/data/jail.d/nginx.conf"
-      - "./fail2ban/nginx-accesslog.conf:/data/filter.d/nginx-accesslog.conf" 
-      - "./nginx/logs/:/var/log/nginx/:ro"
-
-  ########################################
-  ############ INIT REVERSE PROXY ########
-  reverseproxy:
-    image: nginx:stable-alpine3.17-slim
-    restart: always
-    ports:
-      - "172.100.30.1:80:80"
-    networks:
-      - internet
-      - infra
-    depends_on:
-      - app
-    volumes:
-      - ./nginx/server.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - "./nginx/logs:/var/log/nginx"
+  
 
   ########################################
   ############ INIT APP ########

@@ -1,0 +1,9 @@
+FROM python:3.10-alpine3.19
+
+COPY ./ /app
+
+WORKDIR /app
+
+RUN pip install -r requirements.txt && mkdir -p /var/log/nginx/ && echo >> /var/log/nginx/access.log
+
+ENTRYPOINT [ "python3", "src/main.py" ]

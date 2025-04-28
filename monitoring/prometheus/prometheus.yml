@@ -17,8 +17,16 @@ scrape_configs:
 
   - job_name: 'cadvisor'
     static_configs:
-      - targets: ['cadvisor:9100']   # the cadvisor for docker
+      - targets: ['cadvisor:8080']   # the cadvisor for docker
 
   - job_name: 'node'
     static_configs:
       - targets: ['exporter:9100']   # the node-exporter for complete sys
+
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginxexporter:9113']   # the node-exporter for complete sys
+
+  - job_name: 'netanalyser'
+    static_configs:
+      - targets: ['exporternetanalyser:8000']   # the node-exporter for complete sys
