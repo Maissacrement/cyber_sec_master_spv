@@ -27,6 +27,9 @@ running-container-analisis:
 workflow-attack-example:
 	docker compose -f ./monitoring.yml -f ./docker-compose.yml -f ./nginx-workflow.yml up -d --build
 
+stop-workflow-attack-example:
+	docker compose -f ./monitoring.yml -f ./docker-compose.yml -f ./nginx-workflow.yml stop
+
 deploy:
 	ansible-playbook cd.yml
 	
