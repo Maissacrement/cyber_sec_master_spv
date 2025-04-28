@@ -57,20 +57,17 @@ En conclusion, la mitigation appliquée permet de réduire de 90 % le temps de d
 <img src="assets/analyse.png" style="width:100%" >
 
 
+### Outils de supervision & datavisualisation
 
-### Outils de monitoring et datavisualisation
+#### Exporter **Network Analyser**
+Exporter Prometheus écrit en Python, conçu pour collecter des métriques réseau nginx
+L’objectif est d’identifier rapidement tout comportement suspect au niveau trafic. Les conteneurs publient ces métriques que Prometheus scrape, puis Grafana les exploite via des dashboards et des batch scripts.
 
-#### Exporter Network Analayser
+#### **NGINX Exporter**
+Expose les statistiques du reverse-proxy en lisant l’endpoint `/stub_status` (activé dans la conf Nginx avec le flag `stub_status`). On obtient ainsi en temps réel les requêtes par seconde, les connexions en file d’attente, les codes HTTP, etc.
 
-expoter prometheus customiser definit sous python afin de recuperer des metrics reseaux ici pour determiner un comportement suspect sur le reseau. Notre environnement est containeuriser et fournis toutes les metrics as prometheus que nous utilisons directement sur grafana via des script batch
-
-#### NGINX exporter 
-
-Cette exporter vas nous permettre d'avoir les metrics exporter sur l'endpoint "/stub_status" que nous avons defini sur la conf d'nginx via le flag "stub_status" 
-
-#### Grafana
-
-j'ai configurer grafana pour qu'il puisse a l'aide de notre exporter customiser faire des analyse reseaux, plus precisement nous allons ciblé toute les ip qui font plus de 10 requete par seconde a fin de mener des analyse plus aprofondie
+#### **Grafana**
+Configuré pour utiliser l’Exporter Network Analyser. Les tableaux de bord mettent notamment en évidence toutes les IP dépassant **10 requêtes/seconde**, afin de déclencher des analyses plus poussées ou des mesures d’atténuation.
 
 <img src="assets/grafana.png" style="width:100%" >
 
