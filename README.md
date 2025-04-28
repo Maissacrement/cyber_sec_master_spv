@@ -200,7 +200,7 @@ d’un état initial contrôlé vers un état final où vos privilèges ou vos c
 |  | **Collecte & analyse** (Prometheus, Grafana, ...) | Agrégation logs/metrics, tableaux de bord, alertes |
 
 
-## Stack par défaut — version corrigée et prête à paramétrer
+## Stack par défaut
 
 | **Service**            | **Fonction**                                                             | **Ports exposés**        |
 |------------------------|--------------------------------------------------------------------------|--------------------------|
