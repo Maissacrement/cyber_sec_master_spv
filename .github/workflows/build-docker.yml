@@ -2,9 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] # l'action s'execute a chaque push sur main
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ] # l'action s'execute a chaque pull request sur main
 
 jobs:
 
@@ -14,5 +14,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Made SAST docker running catainer analysis
+      run: make workflow-attack-example running-container-analisis stop-workflow-attack-example # la commande est sensé marché pour tout utilisateur present dans la racine du projet
+    - name: Made SAST docker-compose file analysis
+      run: make workflow-attack-example run-project-analysis stop-workflow-attack-example # la commande est sensé marché pour tout utilisateur present dans la racine du projet
     - name: Try to compile attacker
-      run: docker build . --file ./docker/Dockerfile.attack --tag attacker:$(date +%s)
+      run: docker build . --file ./docker/Dockerfile.attack --tag attacker:$(date +%s) # On construit l'image pour savoir si elle, se construit de la meme façon sur une autre machine
