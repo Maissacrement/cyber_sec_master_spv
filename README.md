@@ -69,6 +69,16 @@ Expose les statistiques du reverse-proxy en lisant l’endpoint `/stub_status` (
 #### **Grafana**
 Configuré pour utiliser l’Exporter Network Analyser. Les tableaux de bord mettent notamment en évidence toutes les IP dépassant **10 requêtes/seconde**, afin de déclencher des analyses plus poussées ou des mesures d’atténuation.
 
+#### 📖 Simulation d'attaques locales sur la carte Grafana
+
+Pour **simuler un comportement d'attaque** visible sur la carte dans Grafana, il suffit d'**envoyer plusieurs requêtes rapidement** depuis votre propre navigateur.
+
+**Comment faire ?**
+- Ouvrez simplement votre navigateur web (Chrome, Firefox, etc.).
+- Accédez à l'URL cible (ex: `http://localhost:3000` la page d'acceuil est un dashboard grafana dont vous pouvez observé les metrics).
+- **Spammer** le bouton **"Refresh"** (`F5`) pour générer de nombreuses requêtes en peu de temps.
+
+
 <img src="assets/grafana.png" style="width:100%" >
 
 
