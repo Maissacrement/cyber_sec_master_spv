@@ -22,5 +22,14 @@ jobs:
       run: |
         make run-project-analysis 2>/dev/null # la commande est sensé marché pour tout utilisateur present dans la racine du projet
         cat ./rapport/docker-compose-images-vuln.txt
-    - name: Try to compile attacker
+    - name: Build Attacker Docker Image 
       run: docker build . --file ./docker/Dockerfile.attack --tag attacker:$(date +%s) # On construit l'image pour savoir si elle, se construit de la meme façon sur une autre machine
+
+    - name: Deploy all scenario for workflow analysis
+      run:  ansible-playbook cd.yml
+    - name: Upload math result for job 1
+      uses: actions/upload-artifact@v4
+      with:
+        name: homework_pre
+        path: math-homework.txt
+    
